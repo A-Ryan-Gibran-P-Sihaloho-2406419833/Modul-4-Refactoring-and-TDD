@@ -13,6 +13,10 @@ import static org.junit.jupiter.api.Assertions.*;
 class PaymentTest {
     private Order order;
 
+    private static final String VOUCHER_CODE_KEY = "voucherCode";
+    private static final String VOUCHER_METHOD = "VOUCHER";
+    private static final String REJECTED_STATUS = "REJECTED";
+
     @BeforeEach
     void setUp() {
         List<Product> products = new ArrayList<>();
@@ -26,44 +30,42 @@ class PaymentTest {
                 products, 1708560000L, "Safira Sudrajat");
     }
 
-    // --- Tests for Voucher Code ---
     @Test
     void testCreatePaymentVoucherSuccess() {
         Map<String, String> paymentData = new HashMap<>();
-        paymentData.put("voucherCode", "ESHOP1234ABC5678");
+        paymentData.put(VOUCHER_CODE_KEY, "ESHOP1234ABC5678");
 
-        Payment payment = new Payment("payment-1", order, "VOUCHER", paymentData);
-        assertEquals("SUCCESS", payment.getStatus());
+        Payment payment = new Payment("payment-1", order, VOUCHER_METHOD, paymentData);
+        assertEquals("SUCCESS", payment.getStatus(), "Status payment voucher valid harus SUCCESS");
     }
 
     @Test
     void testCreatePaymentVoucherRejected_Not16Chars() {
         Map<String, String> paymentData = new HashMap<>();
-        paymentData.put("voucherCode", "ESHOP123");
+        paymentData.put(VOUCHER_CODE_KEY, "ESHOP123");
 
-        Payment payment = new Payment("payment-2", order, "VOUCHER", paymentData);
-        assertEquals("REJECTED", payment.getStatus());
+        Payment payment = new Payment("payment-2", order, VOUCHER_METHOD, paymentData);
+        assertEquals(REJECTED_STATUS, payment.getStatus(), "Status payment voucher < 16 karakter harus REJECTED");
     }
 
     @Test
     void testCreatePaymentVoucherRejected_NotStartWithEshop() {
         Map<String, String> paymentData = new HashMap<>();
-        paymentData.put("voucherCode", "PAYMT1234ABC5678");
+        paymentData.put(VOUCHER_CODE_KEY, "PAYMT1234ABC5678");
 
-        Payment payment = new Payment("payment-3", order, "VOUCHER", paymentData);
-        assertEquals("REJECTED", payment.getStatus());
+        Payment payment = new Payment("payment-3", order, VOUCHER_METHOD, paymentData);
+        assertEquals(REJECTED_STATUS, payment.getStatus(), "Status payment voucher tanpa awalan ESHOP harus REJECTED");
     }
 
     @Test
     void testCreatePaymentVoucherRejected_Not8Numerics() {
         Map<String, String> paymentData = new HashMap<>();
-        paymentData.put("voucherCode", "ESHOP1234ABCDE56"); // Hanya 6 angka
+        paymentData.put(VOUCHER_CODE_KEY, "ESHOP1234ABCDE56");
 
-        Payment payment = new Payment("payment-4", order, "VOUCHER", paymentData);
-        assertEquals("REJECTED", payment.getStatus());
+        Payment payment = new Payment("payment-4", order, VOUCHER_METHOD, paymentData);
+        assertEquals(REJECTED_STATUS, payment.getStatus(), "Status payment voucher angka bukan 8 digit harus REJECTED");
     }
 
-    // --- Tests for Cash On Delivery (COD) ---
     @Test
     void testCreatePaymentCODSuccess() {
         Map<String, String> paymentData = new HashMap<>();
@@ -71,7 +73,7 @@ class PaymentTest {
         paymentData.put("deliveryFee", "15000");
 
         Payment payment = new Payment("payment-5", order, "COD", paymentData);
-        assertEquals("SUCCESS", payment.getStatus());
+        assertEquals("SUCCESS", payment.getStatus(), "Status payment COD valid harus SUCCESS");
     }
 
     @Test
@@ -81,16 +83,15 @@ class PaymentTest {
         paymentData.put("deliveryFee", "15000");
 
         Payment payment = new Payment("payment-6", order, "COD", paymentData);
-        assertEquals("REJECTED", payment.getStatus());
+        assertEquals(REJECTED_STATUS, payment.getStatus(), "Status payment COD address kosong harus REJECTED");
     }
 
     @Test
     void testCreatePaymentCODRejected_NullDeliveryFee() {
         Map<String, String> paymentData = new HashMap<>();
         paymentData.put("address", "Jalan Margonda Raya");
-        // deliveryFee tidak dimasukkan (null)
 
         Payment payment = new Payment("payment-7", order, "COD", paymentData);
-        assertEquals("REJECTED", payment.getStatus());
+        assertEquals(REJECTED_STATUS, payment.getStatus(), "Status payment COD fee null harus REJECTED");
     }
 }

@@ -50,10 +50,13 @@ class PaymentRepositoryTest {
         Payment result = paymentRepository.save(payment);
         Payment findResult = paymentRepository.findById(payments.get(1).getId());
 
-        assertEquals(payment.getId(), result.getId());
-        assertEquals(payment.getId(), findResult.getId());
-        assertEquals(payment.getMethod(), findResult.getMethod());
-        assertEquals(payment.getStatus(), findResult.getStatus());
+        boolean isResultIdCorrect = payment.getId().equals(result.getId());
+        boolean isFindIdCorrect = payment.getId().equals(findResult.getId());
+        boolean isMethodCorrect = payment.getMethod().equals(findResult.getMethod());
+        boolean isStatusCorrect = payment.getStatus().equals(findResult.getStatus());
+
+        assertTrue(isResultIdCorrect && isFindIdCorrect && isMethodCorrect && isStatusCorrect,
+                "Menyimpan payment baru harus mengembalikan payment yang tepat dan dapat ditemukan");
     }
 
     @Test
@@ -65,8 +68,11 @@ class PaymentRepositoryTest {
         Payment result = paymentRepository.save(newPayment);
         Payment findResult = paymentRepository.findById(payments.get(1).getId());
 
-        assertEquals(payment.getId(), result.getId());
-        assertEquals(payment.getId(), findResult.getId());
+        boolean isResultIdCorrect = payment.getId().equals(result.getId());
+        boolean isFindIdCorrect = payment.getId().equals(findResult.getId());
+
+        assertTrue(isResultIdCorrect && isFindIdCorrect,
+                "Menyimpan payment yang sudah ada harus memperbarui datanya dengan benar");
     }
 
     @Test
@@ -76,9 +82,12 @@ class PaymentRepositoryTest {
         }
         Payment findResult = paymentRepository.findById(payments.get(1).getId());
 
-        assertEquals(payments.get(1).getId(), findResult.getId());
-        assertEquals(payments.get(1).getMethod(), findResult.getMethod());
-        assertEquals(payments.get(1).getStatus(), findResult.getStatus());
+        boolean isIdCorrect = payments.get(1).getId().equals(findResult.getId());
+        boolean isMethodCorrect = payments.get(1).getMethod().equals(findResult.getMethod());
+        boolean isStatusCorrect = payments.get(1).getStatus().equals(findResult.getStatus());
+
+        assertTrue(isIdCorrect && isMethodCorrect && isStatusCorrect,
+                "Mencari payment dengan ID valid harus mengembalikan data yang benar");
     }
 
     @Test
@@ -87,7 +96,7 @@ class PaymentRepositoryTest {
             paymentRepository.save(payment);
         }
         Payment findResult = paymentRepository.findById("zczc");
-        assertNull(findResult);
+        assertNull(findResult, "Mencari payment dengan ID tidak valid harus mengembalikan null");
     }
 
     @Test
@@ -96,6 +105,6 @@ class PaymentRepositoryTest {
             paymentRepository.save(payment);
         }
         List<Payment> paymentList = paymentRepository.findAll();
-        assertEquals(2, paymentList.size());
+        assertEquals(2, paymentList.size(), "Mencari semua payment harus mengembalikan list dengan ukuran yang benar");
     }
 }

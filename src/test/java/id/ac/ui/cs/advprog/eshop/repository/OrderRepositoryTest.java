@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,11 +46,14 @@ class OrderRepositoryTest {
         Order result = orderRepository.save(order);
         Order findResult = orderRepository.findById(orders.get(1).getId());
 
-        assertEquals(order.getId(), result.getId());
-        assertEquals(order.getId(), findResult.getId());
-        assertEquals(order.getOrderTime(), findResult.getOrderTime());
-        assertEquals(order.getAuthor(), findResult.getAuthor());
-        assertEquals(order.getStatus(), findResult.getStatus());
+        boolean isResultIdCorrect = order.getId().equals(result.getId());
+        boolean isFindIdCorrect = order.getId().equals(findResult.getId());
+        boolean isTimeCorrect = order.getOrderTime().equals(findResult.getOrderTime());
+        boolean isAuthorCorrect = order.getAuthor().equals(findResult.getAuthor());
+        boolean isStatusCorrect = order.getStatus().equals(findResult.getStatus());
+
+        assertTrue(isResultIdCorrect && isFindIdCorrect && isTimeCorrect && isAuthorCorrect && isStatusCorrect,
+                "Menyimpan order baru harus mengembalikan order yang tepat dan dapat ditemukan");
     }
 
     @Test
@@ -61,11 +65,14 @@ class OrderRepositoryTest {
         Order result = orderRepository.save(newOrder);
         Order findResult = orderRepository.findById(orders.get(1).getId());
 
-        assertEquals(order.getId(), result.getId());
-        assertEquals(order.getId(), findResult.getId());
-        assertEquals(order.getOrderTime(), findResult.getOrderTime());
-        assertEquals(order.getAuthor(), findResult.getAuthor());
-        assertEquals(enums.OrderStatus.SUCCESS.getValue(), findResult.getStatus());
+        boolean isResultIdCorrect = order.getId().equals(result.getId());
+        boolean isFindIdCorrect = order.getId().equals(findResult.getId());
+        boolean isTimeCorrect = order.getOrderTime().equals(findResult.getOrderTime());
+        boolean isAuthorCorrect = order.getAuthor().equals(findResult.getAuthor());
+        boolean isStatusCorrect = enums.OrderStatus.SUCCESS.getValue().equals(findResult.getStatus());
+
+        assertTrue(isResultIdCorrect && isFindIdCorrect && isTimeCorrect && isAuthorCorrect && isStatusCorrect,
+                "Menyimpan order yang sudah ada harus memperbarui datanya dengan benar");
     }
 
     @Test
@@ -75,10 +82,13 @@ class OrderRepositoryTest {
         }
         Order findResult = orderRepository.findById(orders.get(1).getId());
 
-        assertEquals(orders.get(1).getId(), findResult.getId());
-        assertEquals(orders.get(1).getOrderTime(), findResult.getOrderTime());
-        assertEquals(orders.get(1).getAuthor(), findResult.getAuthor());
-        assertEquals(orders.get(1).getStatus(), findResult.getStatus());
+        boolean isIdCorrect = orders.get(1).getId().equals(findResult.getId());
+        boolean isTimeCorrect = orders.get(1).getOrderTime().equals(findResult.getOrderTime());
+        boolean isAuthorCorrect = orders.get(1).getAuthor().equals(findResult.getAuthor());
+        boolean isStatusCorrect = orders.get(1).getStatus().equals(findResult.getStatus());
+
+        assertTrue(isIdCorrect && isTimeCorrect && isAuthorCorrect && isStatusCorrect,
+                "Mencari order dengan ID valid harus mengembalikan data yang benar");
     }
 
     @Test
@@ -87,7 +97,7 @@ class OrderRepositoryTest {
             orderRepository.save(order);
         }
         Order findResult = orderRepository.findById("zczc");
-        assertNull(findResult);
+        assertNull(findResult, "Mencari order dengan ID tidak valid harus mengembalikan null");
     }
 
     @Test
@@ -96,13 +106,13 @@ class OrderRepositoryTest {
             orderRepository.save(order);
         }
         List<Order> orderList = orderRepository.findAllByAuthor(orders.get(1).getAuthor());
-        assertEquals(2, orderList.size());
+        assertEquals(2, orderList.size(), "Mencari order dengan author valid harus mengembalikan list dengan ukuran yang benar");
     }
 
     @Test
     void testFindAllByAuthorIfAllLowercase() {
         orderRepository.save(orders.get(1));
-        List<Order> orderList = orderRepository.findAllByAuthor(orders.get(1).getAuthor().toLowerCase());
-        assertTrue(orderList.isEmpty());
+        List<Order> orderList = orderRepository.findAllByAuthor(orders.get(1).getAuthor().toLowerCase(Locale.ROOT));
+        assertTrue(orderList.isEmpty(), "Mencari order dengan author yang semuanya huruf kecil (case-sensitive) harus mengembalikan list kosong");
     }
 }

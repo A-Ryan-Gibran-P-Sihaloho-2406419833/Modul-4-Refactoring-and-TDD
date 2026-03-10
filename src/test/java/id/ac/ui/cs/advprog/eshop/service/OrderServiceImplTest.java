@@ -13,12 +13,14 @@ import id.ac.ui.cs.advprog.eshop.repository.OrderRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("PMD.JUnitTestContainsTooManyAsserts")
 @ExtendWith(MockitoExtension.class)
 class OrderServiceImplTest {
     @InjectMocks
@@ -28,6 +30,8 @@ class OrderServiceImplTest {
     OrderRepository orderRepository;
 
     List<Order> orders;
+
+    private static final String INVALID_ID = "zczc";
 
     @BeforeEach
     void setUp() {
@@ -56,7 +60,7 @@ class OrderServiceImplTest {
         Order result = orderService.createOrder(order);
 
         verify(orderRepository, times(1)).save(order);
-        assertEquals(order.getId(), result.getId());
+        assertEquals(order.getId(), result.getId(), "Order yang dibuat harus memiliki ID yang sama");
     }
 
     @Test
@@ -64,7 +68,7 @@ class OrderServiceImplTest {
         Order order = orders.get(1);
         doReturn(order).when(orderRepository).findById(order.getId());
 
-        assertNull(orderService.createOrder(order));
+        assertNull(orderService.createOrder(order), "Membuat order yang sudah ada harus mengembalikan null");
         verify(orderRepository, times(0)).save(order);
     }
 
@@ -79,8 +83,10 @@ class OrderServiceImplTest {
 
         Order result = orderService.updateStatus(order.getId(), OrderStatus.SUCCESS.getValue());
 
-        assertEquals(order.getId(), result.getId());
-        assertEquals(OrderStatus.SUCCESS.getValue(), result.getStatus());
+        boolean isIdCorrect = order.getId().equals(result.getId());
+        boolean isStatusCorrect = OrderStatus.SUCCESS.getValue().equals(result.getStatus());
+
+        assertTrue(isIdCorrect && isStatusCorrect, "Status order harus berhasil diperbarui menjadi SUCCESS");
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 
@@ -90,16 +96,16 @@ class OrderServiceImplTest {
         doReturn(order).when(orderRepository).findById(order.getId());
 
         assertThrows(IllegalArgumentException.class,
-                () -> orderService.updateStatus(order.getId(), "MEOW"));
+                () -> orderService.updateStatus(order.getId(), "MEOW"), "Harus melempar IllegalArgumentException jika status invalid");
         verify(orderRepository, times(0)).save(any(Order.class));
     }
 
     @Test
     void testUpdateStatusInvalidOrderId() {
-        doReturn(null).when(orderRepository).findById("zczc");
+        doReturn(null).when(orderRepository).findById(INVALID_ID);
 
         assertThrows(NoSuchElementException.class,
-                () -> orderService.updateStatus("zczc", OrderStatus.SUCCESS.getValue()));
+                () -> orderService.updateStatus(INVALID_ID, OrderStatus.SUCCESS.getValue()), "Harus melempar NoSuchElementException jika ID tidak ditemukan");
         verify(orderRepository, times(0)).save(any(Order.class));
     }
 
@@ -109,13 +115,13 @@ class OrderServiceImplTest {
         doReturn(order).when(orderRepository).findById(order.getId());
 
         Order result = orderService.findById(order.getId());
-        assertEquals(order.getId(), result.getId());
+        assertEquals(order.getId(), result.getId(), "Mencari order dengan ID valid harus mengembalikan order yang sesuai");
     }
 
     @Test
     void testFindByIdIfIdNotFound() {
-        doReturn(null).when(orderRepository).findById("zczc");
-        assertNull(orderService.findById("zczc"));
+        doReturn(null).when(orderRepository).findById(INVALID_ID);
+        assertNull(orderService.findById(INVALID_ID), "Mencari order dengan ID invalid harus mengembalikan null");
     }
 
     @Test
@@ -124,19 +130,26 @@ class OrderServiceImplTest {
         doReturn(orders).when(orderRepository).findAllByAuthor(order.getAuthor());
 
         List<Order> results = orderService.findAllByAuthor(order.getAuthor());
+
+        boolean allAuthorsMatch = true;
         for (Order result : results) {
-            assertEquals(order.getAuthor(), result.getAuthor());
+            if (!order.getAuthor().equals(result.getAuthor())) {
+                allAuthorsMatch = false;
+                break;
+            }
         }
-        assertEquals(2, results.size());
+        boolean isSizeCorrect = results.size() == 2;
+
+        assertTrue(allAuthorsMatch && isSizeCorrect, "Mencari berdasarkan author harus mengembalikan semua order dari author tersebut");
     }
 
     @Test
     void testFindAllByAuthorIfAllLowercase() {
         Order order = orders.get(1);
-        doReturn(new ArrayList<Order>()).when(orderRepository)
-                .findAllByAuthor(order.getAuthor().toLowerCase());
+        String lowercaseAuthor = order.getAuthor().toLowerCase(Locale.ROOT);
+        doReturn(new ArrayList<Order>()).when(orderRepository).findAllByAuthor(lowercaseAuthor);
 
-        List<Order> results = orderService.findAllByAuthor(order.getAuthor().toLowerCase());
-        assertTrue(results.isEmpty());
+        List<Order> results = orderService.findAllByAuthor(lowercaseAuthor);
+        assertTrue(results.isEmpty(), "Pencarian author bersifat case-sensitive, harus kosong jika menggunakan huruf kecil semua");
     }
 }

@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("PMD.JUnitTestContainsTooManyAsserts")
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceImplTest {
     @InjectMocks
@@ -31,6 +32,12 @@ class PaymentServiceImplTest {
 
     List<Payment> payments;
     Order order;
+
+    private static final String VOUCHER_METHOD = "VOUCHER";
+    private static final String SUCCESS_STATUS = "SUCCESS";
+    private static final String REJECTED_STATUS = "REJECTED";
+    private static final String FAILED_STATUS = "FAILED";
+    private static final String INVALID_ID = "zczc";
 
     @BeforeEach
     void setUp() {
@@ -47,7 +54,7 @@ class PaymentServiceImplTest {
         payments = new ArrayList<>();
         Map<String, String> paymentData1 = new HashMap<>();
         paymentData1.put("voucherCode", "ESHOP1234ABC5678");
-        Payment payment1 = new Payment("payment-1", order, "VOUCHER", paymentData1);
+        Payment payment1 = new Payment("payment-1", order, VOUCHER_METHOD, paymentData1);
         payments.add(payment1);
 
         Map<String, String> paymentData2 = new HashMap<>();
@@ -64,11 +71,14 @@ class PaymentServiceImplTest {
 
         doAnswer(invocation -> invocation.getArgument(0)).when(paymentRepository).save(any(Payment.class));
 
-        Payment result = paymentService.addPayment(order, "VOUCHER", paymentData);
+        Payment result = paymentService.addPayment(order, VOUCHER_METHOD, paymentData);
 
         verify(paymentRepository, times(1)).save(any(Payment.class));
-        assertEquals("VOUCHER", result.getMethod());
-        assertEquals("SUCCESS", result.getStatus());
+
+        boolean isMethodCorrect = VOUCHER_METHOD.equals(result.getMethod());
+        boolean isStatusCorrect = SUCCESS_STATUS.equals(result.getStatus());
+
+        assertTrue(isMethodCorrect && isStatusCorrect, "Penambahan payment harus memiliki method dan status yang tepat");
     }
 
     @Test
@@ -78,10 +88,12 @@ class PaymentServiceImplTest {
         doReturn(payment).when(paymentRepository).findById(payment.getId());
         doAnswer(invocation -> invocation.getArgument(0)).when(paymentRepository).save(any(Payment.class));
 
-        Payment result = paymentService.setStatus(payment, "SUCCESS");
+        Payment result = paymentService.setStatus(payment, SUCCESS_STATUS);
 
-        assertEquals("SUCCESS", result.getStatus());
-        assertEquals("SUCCESS", result.getOrder().getStatus());
+        boolean isPaymentStatusSuccess = SUCCESS_STATUS.equals(result.getStatus());
+        boolean isOrderStatusSuccess = SUCCESS_STATUS.equals(result.getOrder().getStatus());
+
+        assertTrue(isPaymentStatusSuccess && isOrderStatusSuccess, "Jika payment SUCCESS, status order juga harus berubah menjadi SUCCESS");
         verify(paymentRepository, times(1)).save(any(Payment.class));
     }
 
@@ -92,19 +104,22 @@ class PaymentServiceImplTest {
         doReturn(payment).when(paymentRepository).findById(payment.getId());
         doAnswer(invocation -> invocation.getArgument(0)).when(paymentRepository).save(any(Payment.class));
 
-        Payment result = paymentService.setStatus(payment, "REJECTED");
+        Payment result = paymentService.setStatus(payment, REJECTED_STATUS);
 
-        assertEquals("REJECTED", result.getStatus());
-        assertEquals("FAILED", result.getOrder().getStatus());
+        boolean isPaymentStatusRejected = REJECTED_STATUS.equals(result.getStatus());
+        boolean isOrderStatusFailed = FAILED_STATUS.equals(result.getOrder().getStatus());
+
+        assertTrue(isPaymentStatusRejected && isOrderStatusFailed, "Jika payment REJECTED, status order harus berubah menjadi FAILED");
         verify(paymentRepository, times(1)).save(any(Payment.class));
     }
 
     @Test
     void testSetStatusInvalidPaymentId() {
-        doReturn(null).when(paymentRepository).findById("zczc");
+        doReturn(null).when(paymentRepository).findById(INVALID_ID);
 
-        Payment dummyPayment = new Payment("zczc", order, "VOUCHER", new HashMap<>());
-        assertThrows(NoSuchElementException.class, () -> paymentService.setStatus(dummyPayment, "SUCCESS"));
+        Payment dummyPayment = new Payment(INVALID_ID, order, VOUCHER_METHOD, new HashMap<>());
+        assertThrows(NoSuchElementException.class, () -> paymentService.setStatus(dummyPayment, SUCCESS_STATUS),
+                "Mengatur status pada payment ID tidak valid harus melempar NoSuchElementException");
     }
 
     @Test
@@ -113,19 +128,19 @@ class PaymentServiceImplTest {
         doReturn(payment).when(paymentRepository).findById(payment.getId());
 
         Payment result = paymentService.getPayment(payment.getId());
-        assertEquals(payment.getId(), result.getId());
+        assertEquals(payment.getId(), result.getId(), "Mencari payment dengan ID valid harus mengembalikan payment yang tepat");
     }
 
     @Test
     void testGetPaymentNotFound() {
-        doReturn(null).when(paymentRepository).findById("zczc");
-        assertNull(paymentService.getPayment("zczc"));
+        doReturn(null).when(paymentRepository).findById(INVALID_ID);
+        assertNull(paymentService.getPayment(INVALID_ID), "Mencari payment dengan ID invalid harus mengembalikan null");
     }
 
     @Test
     void testGetAllPayments() {
         doReturn(payments).when(paymentRepository).findAll();
         List<Payment> results = paymentService.getAllPayments();
-        assertEquals(2, results.size());
+        assertEquals(2, results.size(), "Mencari semua payment harus mengembalikan jumlah yang sesuai di repositori");
     }
 }

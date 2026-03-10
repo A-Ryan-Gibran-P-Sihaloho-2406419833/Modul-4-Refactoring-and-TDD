@@ -16,6 +16,11 @@ public class PaymentServiceImpl implements PaymentService {
     @Autowired
     private PaymentRepository paymentRepository;
 
+    // Ekstraksi string literal menjadi konstan
+    private static final String SUCCESS_STATUS = "SUCCESS";
+    private static final String REJECTED_STATUS = "REJECTED";
+    private static final String FAILED_STATUS = "FAILED";
+
     @Override
     public Payment addPayment(Order order, String method, Map<String, String> paymentData) {
         Payment payment = new Payment(UUID.randomUUID().toString(), order, method, paymentData);
@@ -31,10 +36,10 @@ public class PaymentServiceImpl implements PaymentService {
             Payment newPayment = new Payment(existingPayment.getId(), existingPayment.getOrder(),
                     existingPayment.getMethod(), status, existingPayment.getPaymentData());
 
-            if ("SUCCESS".equals(status)) {
-                newPayment.getOrder().setStatus("SUCCESS");
-            } else if ("REJECTED".equals(status)) {
-                newPayment.getOrder().setStatus("FAILED");
+            if (SUCCESS_STATUS.equals(status)) {
+                newPayment.getOrder().setStatus(SUCCESS_STATUS);
+            } else if (REJECTED_STATUS.equals(status)) {
+                newPayment.getOrder().setStatus(FAILED_STATUS);
             }
 
             paymentRepository.save(newPayment);

@@ -10,6 +10,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class OrderTest {
     private List<Product> products;
 
+    private static final String ORDER_ID = "13652556-0128-4c07-b546-54eb1396d79b";
+    private static final String AUTHOR = "Safira Sudrajat";
+
     @BeforeEach
     void setUp() {
         this.products = new ArrayList<>();
@@ -32,54 +35,54 @@ class OrderTest {
     void testCreateOrderEmptyProduct() {
         this.products.clear();
         assertThrows(IllegalArgumentException.class, () -> {
-            Order order = new Order("13652556-0128-4c07-b546-54eb1396d79b",
-                    this.products, 1708560000L, "Safira Sudrajat");
-        });
+            new Order(ORDER_ID, this.products, 1708560000L, AUTHOR);
+        }, "Harus melempar IllegalArgumentException jika produk kosong");
     }
 
     @Test
     void testCreateOrderDefaultStatus() {
         Order order = new Order("13652556-012a-4c07-b546-54eb1396d79b",
-                this.products, 1708560000L, "Safira Sudrajat");
+                this.products, 1708560000L, AUTHOR);
 
-        assertSame(this.products, order.getProducts());
-        assertEquals(2, order.getProducts().size());
-        assertEquals("Sampo Cap Bambang", order.getProducts().get(0).getProductName());
-        assertEquals("Sabun Cap Usep", order.getProducts().get(1).getProductName());
+        boolean isProductsSame = this.products.equals(order.getProducts());
+        boolean isSizeCorrect = order.getProducts().size() == 2;
+        boolean isName1Correct = "Sampo Cap Bambang".equals(order.getProducts().get(0).getProductName());
+        boolean isName2Correct = "Sabun Cap Usep".equals(order.getProducts().get(1).getProductName());
+        boolean isIdCorrect = "13652556-012a-4c07-b546-54eb1396d79b".equals(order.getId());
+        boolean isTimeCorrect = order.getOrderTime() == 1708560000L;
+        boolean isAuthorCorrect = AUTHOR.equals(order.getAuthor());
+        boolean isStatusCorrect = OrderStatus.WAITING_PAYMENT.getValue().equals(order.getStatus());
 
-        assertEquals("13652556-012a-4c07-b546-54eb1396d79b", order.getId());
-        assertEquals(1708560000L, order.getOrderTime());
-        assertEquals("Safira Sudrajat", order.getAuthor());
-        assertEquals(OrderStatus.WAITING_PAYMENT.getValue(), order.getStatus());
+        assertTrue(isProductsSame && isSizeCorrect && isName1Correct && isName2Correct
+                        && isIdCorrect && isTimeCorrect && isAuthorCorrect && isStatusCorrect,
+                "Pembuatan order dengan status default harus menginisialisasi semua atribut dengan benar");
     }
 
     @Test
     void testCreateOrderSuccessStatus() {
-        Order order = new Order("13652556-0128-4c07-b546-54eb1396d79b",
-                this.products, 1708560000L, "Safira Sudrajat", OrderStatus.SUCCESS.getValue());
-        assertEquals("SUCCESS", order.getStatus());
+        Order order = new Order(ORDER_ID, this.products, 1708560000L, AUTHOR, OrderStatus.SUCCESS.getValue());
+        assertEquals("SUCCESS", order.getStatus(), "Status order harus SUCCESS");
     }
 
     @Test
     void testCreateOrderInvalidStatus() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Order order = new Order("13652556-0128-4c07-b546-54eb1396d79b",
-                    this.products, 1708560000L, "Safira Sudrajat", "MEOW");
-        });
+            new Order(ORDER_ID, this.products, 1708560000L, AUTHOR, "MEOW");
+        }, "Harus melempar IllegalArgumentException jika status tidak valid");
     }
 
     @Test
     void testSetStatusToCancelled() {
         Order order = new Order("13652556-012a-4c07-b546-54eb1396d79b",
-                this.products, 1708560000L, "Safira Sudrajat");
+                this.products, 1708560000L, AUTHOR);
         order.setStatus(OrderStatus.CANCELLED.getValue());
-        assertEquals("CANCELLED", order.getStatus());
+        assertEquals("CANCELLED", order.getStatus(), "Status order harus berubah menjadi CANCELLED");
     }
 
     @Test
     void testSetStatusToInvalidStatus() {
-        Order order = new Order("13652556-0128-4c07-b546-54eb1396d79b",
-                this.products, 1708560000L, "Safira Sudrajat");
-        assertThrows(IllegalArgumentException.class, () -> order.setStatus("MEOW"));
+        Order order = new Order(ORDER_ID, this.products, 1708560000L, AUTHOR);
+        assertThrows(IllegalArgumentException.class, () -> order.setStatus("MEOW"),
+                "Harus melempar IllegalArgumentException saat mengatur status yang tidak valid");
     }
 }

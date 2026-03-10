@@ -1,10 +1,8 @@
 package id.ac.ui.cs.advprog.eshop.model;
 
-
 import enums.OrderStatus;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import java.util.List;
 
 @Builder
@@ -14,19 +12,18 @@ public class Order {
     List<Product> products;
     Long orderTime;
     String author;
-
     String status;
 
     public Order(String id, List<Product> products, Long orderTime, String author) {
-        this.id=id;
-        this.orderTime=orderTime;
-        this.author=author;
-        this.status=OrderStatus.WAITING_PAYMENT.getValue();;
+        this.id = id;
+        this.orderTime = orderTime;
+        this.author = author;
+        this.status = OrderStatus.WAITING_PAYMENT.getValue(); // Hapus titik koma ganda
 
-        if(products.isEmpty()){
+        if (products.isEmpty()) {
             throw new IllegalArgumentException();
         } else {
-            this.products=products;
+            this.products = products;
         }
     }
 
@@ -35,7 +32,8 @@ public class Order {
         this.setStatus(status);
     }
 
-    public void setStatus(String status) {
+    // Tambahkan kata 'final' untuk menghindari warning dari PMD
+    public final void setStatus(String status) {
         if (OrderStatus.contains(status)) {
             this.status = status;
         } else {
