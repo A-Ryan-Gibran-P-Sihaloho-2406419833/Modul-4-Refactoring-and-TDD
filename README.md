@@ -51,3 +51,28 @@ Kalo prinsip SOLID diabaikan, kode akan menjadi kaku, rapuh, dan sulit untuk dik
 
 * **File Membengkak / Spaghetti Code (Pelanggaran SRP):** kalau saya membiarkan `CarController` dan `ProductController` berada di satu file, lama-kelamaan file tersebut akan memiliki ribuan baris kode seiring bertambahnya fitur. Hal ini akan membuat kode sangat pusing untuk dibaca dan dikerjakan bersama tim (rawan terjadi *merge conflict*).
 * **Ketergantungan Ketat / Tight Coupling (Pelanggaran DIP):** kalau `CarController` dibiarkan bergantung langsung pada `CarServiceImpl`, maka setiap kali constructor atau struktur dari `CarServiceImpl` berubah, saya terpaksa harus mengedit `CarController` juga. Jika aplikasinya besar dan satu *Service* dipakai oleh banyak *Controller*, saya harus mengedit puluhan file hanya karena satu perubahan kecil di bagian *Service*.
+
+
+
+## Modul 4: Refleksi Test-Driven Development (TDD)
+
+**1. Refleksi tentang Alur TDD (Berdasarkan pertanyaan evaluasi Percival)**
+Menurut saya, alur kerja TDD (Test-Driven Development) ini terbukti sangat berguna. Dengan menulis tes terlebih dahulu 
+(fase RED), saya dipaksa untuk benar-benar memahami apa yang harus dilakukan oleh progrvam sebelum mulai menulis kode aslinya. 
+Proses ini membuat p;enulisan kode menjadi lebih terarah (fase GREEN). Selain itu, adanya tes otomatis memberikan rasa aman 
+ketika saya harus merapidkan kode (refactoring). Jika perubahan yang sayaa buat merusak fungsi program, tes akan langsung 
+gagal dan memberi tahu saya.
+
+Untuk ke depannya, yang perlu saya tingkatkan saat membuat tes adalah memikirkan lebih banyak skenario *edge cases* 
+(kasus ekstrem atau jarang terjadi) agar kode saya bisa lebih tangguh menghadapi berbagai kemungkinan input yang tidak terduga.
+
+**2. Refleksi tentang Prinsip F.I.R.S.T dalam Unit Test**
+Secara keseluruhan, saya merasa tes yang saya buat di tutorial ini sudahukup baik dan mengikuti prinsip F.I.R.S.T.:
+* **Fast (Cepat)**: Tes berjalan sangat cepat dalam hitungan milidetik, sehingga tidak menghambat proses *development*.
+* **Independent (Mandiri)**: Setiap tes berdiri sendiri dan tidak bergantung pada tes lainnya. Penggunaan `@BeforeEach` sangat membantu untuk menyiapkan ulang data agar tes tetap terisolasi.
+* **Repeatable (Dapat Diulang)**: Tes dapat dijalankan berkali-kali di berbagai *environment* dengan hasil yang konsisten.
+* **Self-Validating (Memvalidasi Sendiri)**: Tes otomatis mengecek kebenarannya sendirid menggunakan *assertions* (seperti `assertEquals` atau `assertThrows`) tanpa perlu pengecekan manual.
+* **Timely (Tepat Waktu)**: Tes ditulis di waktu yang tepat, yaitu sebelum implementasi kode aslinya dibuat sesuai aturan TDD.
+
+Hal yang mungkin perlu saya perbaiki kea depannya adalah memastikan konsistensi dalam membuat mocking untuk layer seperti Service
+agar pengujian benar-benar fokus pada logika bisnis dan tidak bergantung pada komponen di luarnya.
