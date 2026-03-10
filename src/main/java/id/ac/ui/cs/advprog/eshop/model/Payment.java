@@ -12,5 +12,43 @@ public class Payment {
     Map<String, String> paymentData;
 
     public Payment(String id, Order order, String method, Map<String, String> paymentData) {
+        this.id = id;
+        this.order = order;
+        this.method = method;
+        this.paymentData = paymentData;
+
+        if ("VOUCHER".equals(method)) {
+            String voucherCode = paymentData.get("voucherCode");
+            if (voucherCode != null &&
+                    voucherCode.length() == 16 &&
+                    voucherCode.startsWith("ESHOP") &&
+                    countNumerics(voucherCode) == 8) {
+                this.status = "SUCCESS";
+            } else {
+                this.status = "REJECTED";
+            }
+        } else if ("COD".equals(method)) {
+            String address = paymentData.get("address");
+            String deliveryFee = paymentData.get("deliveryFee");
+
+            if (address == null || address.trim().isEmpty() ||
+                    deliveryFee == null || deliveryFee.trim().isEmpty()) {
+                this.status = "REJECTED";
+            } else {
+                this.status = "SUCCESS";
+            }
+        } else {
+            this.status = "REJECTED";
+        }
+    }
+
+    private int countNumerics(String str) {
+        int count = 0;
+        for (char c : str.toCharArray()) {
+            if (Character.isDigit(c)) {
+                count++;
+            }
+        }
+        return count;
     }
 }
