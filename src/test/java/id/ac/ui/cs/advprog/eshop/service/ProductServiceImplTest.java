@@ -16,6 +16,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("PMD.JUnitTestContainsTooManyAsserts")
 @ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest {
 
@@ -41,7 +42,7 @@ class ProductServiceImplTest {
 
         Product result = productService.create(product);
 
-        assertEquals(product.getProductId(), result.getProductId());
+        assertEquals(product.getProductId(), result.getProductId(), "Produk yang dibuat harus memiliki ID yang sama");
         verify(productRepository, times(1)).create(product);
     }
 
@@ -56,8 +57,10 @@ class ProductServiceImplTest {
 
         List<Product> result = productService.findAll();
 
-        assertEquals(1, result.size());
-        assertEquals("Sampo Cap Bambang", result.get(0).getProductName());
+        boolean isSizeCorrect = result.size() == 1;
+        boolean isNameCorrect = !result.isEmpty() && "Sampo Cap Bambang".equals(result.get(0).getProductName());
+
+        assertTrue(isSizeCorrect && isNameCorrect, "Mencari semua produk harus mengembalikan list yang tepat");
         verify(productRepository, times(1)).findAll();
     }
 
@@ -67,8 +70,10 @@ class ProductServiceImplTest {
 
         Product result = productService.findById(product.getProductId());
 
-        assertNotNull(result);
-        assertEquals(product.getProductId(), result.getProductId());
+        boolean isNotNull = result != null;
+        boolean isIdCorrect = isNotNull && product.getProductId().equals(result.getProductId());
+
+        assertTrue(isIdCorrect, "Mencari produk berdasarkan ID harus mengembalikan produk yang sesuai");
         verify(productRepository, times(1)).findById(product.getProductId());
     }
 

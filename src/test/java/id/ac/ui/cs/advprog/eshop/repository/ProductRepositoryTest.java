@@ -17,6 +17,8 @@ class ProductRepositoryTest {
     @InjectMocks
     ProductRepository productRepository;
 
+    private static final String UUID_1 = "uuid-1";
+
     @BeforeEach
     void setUp() {
     }
@@ -30,17 +32,21 @@ class ProductRepositoryTest {
         productRepository.create(product);
 
         Iterator<Product> productIterator = productRepository.findAll();
-        assertTrue(productIterator.hasNext());
-        Product savedProduct = productIterator.next();
-        assertEquals(product.getProductId(), savedProduct.getProductId());
-        assertEquals(product.getProductName(), savedProduct.getProductName());
-        assertEquals(product.getProductQuantity(), savedProduct.getProductQuantity());
+        boolean hasNext = productIterator.hasNext();
+        Product savedProduct = hasNext ? productIterator.next() : new Product();
+
+        boolean isIdCorrect = product.getProductId().equals(savedProduct.getProductId());
+        boolean isNameCorrect = product.getProductName().equals(savedProduct.getProductName());
+        boolean isQuantityCorrect = product.getProductQuantity() == savedProduct.getProductQuantity();
+
+        assertTrue(hasNext && isIdCorrect && isNameCorrect && isQuantityCorrect,
+                "Produk yang dibuat harus dapat ditemukan dengan data yang sesuai");
     }
 
     @Test
     void testFindAllIfEmpty() {
         Iterator<Product> productIterator = productRepository.findAll();
-        assertFalse(productIterator.hasNext());
+        assertFalse(productIterator.hasNext(), "Mencari pada repository kosong harus mengembalikan iterator kosong");
     }
 
     @Test
@@ -58,107 +64,111 @@ class ProductRepositoryTest {
         productRepository.create(product2);
 
         Iterator<Product> productIterator = productRepository.findAll();
-        assertTrue(productIterator.hasNext());
-        Product savedProduct = productIterator.next();
-        assertEquals(product1.getProductId(), savedProduct.getProductId());
-        savedProduct = productIterator.next();
-        assertEquals(product2.getProductId(), savedProduct.getProductId());
-        assertFalse(productIterator.hasNext());
+        boolean hasNext1 = productIterator.hasNext();
+        Product savedProduct1 = hasNext1 ? productIterator.next() : new Product();
+        boolean isId1Correct = product1.getProductId().equals(savedProduct1.getProductId());
+
+        boolean hasNext2 = productIterator.hasNext();
+        Product savedProduct2 = hasNext2 ? productIterator.next() : new Product();
+        boolean isId2Correct = product2.getProductId().equals(savedProduct2.getProductId());
+
+        boolean hasNoMoreNext = !productIterator.hasNext();
+
+        assertTrue(hasNext1 && isId1Correct && hasNext2 && isId2Correct && hasNoMoreNext,
+                "Harus bisa mengiterasi semua produk yang telah dibuat dengan benar");
     }
 
     @Test
     void testCreateWithNullId() {
-        // Test covering the branch: if (product.getProductId() == null)
         Product product = new Product();
         product.setProductName("Product No ID");
         product.setProductQuantity(10);
 
         productRepository.create(product);
 
-        assertNotNull(product.getProductId());
+        assertNotNull(product.getProductId(), "Produk yang dibuat tanpa ID harus secara otomatis diberikan ID");
     }
 
     @Test
     void testFindByIdFound() {
         Product product = new Product();
-        product.setProductId("uuid-1");
+        product.setProductId(UUID_1);
         productRepository.create(product);
 
-        Product found = productRepository.findById("uuid-1");
-        assertNotNull(found);
+        Product found = productRepository.findById(UUID_1);
+        assertNotNull(found, "Mencari produk dengan ID valid tidak boleh mengembalikan null");
     }
 
     @Test
     void testFindByIdNotFound() {
         Product found = productRepository.findById("uuid-random-404");
-        assertNull(found);
+        assertNull(found, "Mencari produk dengan ID tidak valid harus mengembalikan null");
     }
 
     @Test
     void testUpdateSuccess() {
         Product product = new Product();
-        product.setProductId("uuid-1");
+        product.setProductId(UUID_1);
         product.setProductName("Original Name");
         productRepository.create(product);
 
         Product updatedData = new Product();
-        updatedData.setProductId("uuid-1");
+        updatedData.setProductId(UUID_1);
         updatedData.setProductName("New Name");
         updatedData.setProductQuantity(99);
 
         Product result = productRepository.update(updatedData);
 
-        assertNotNull(result);
-        assertEquals("New Name", result.getProductName());
-        assertEquals(99, result.getProductQuantity());
+        boolean isResultNotNull = result != null;
+        boolean isNameUpdated = isResultNotNull && "New Name".equals(result.getProductName());
+        boolean isQuantityUpdated = isResultNotNull && result.getProductQuantity() == 99;
+
+        assertTrue(isResultNotNull && isNameUpdated && isQuantityUpdated,
+                "Memperbarui produk harus mengembalikan produk yang diperbarui dengan data baru");
     }
 
     @Test
     void testUpdateNotFound() {
-
         Product product = new Product();
-        product.setProductId("uuid-1");
+        product.setProductId(UUID_1);
 
         Product result = productRepository.update(product);
-        assertNull(result);
+        assertNull(result, "Memperbarui produk yang tidak ada harus mengembalikan null");
     }
 
     @Test
     void testDeleteSuccess() {
         Product product = new Product();
-        product.setProductId("uuid-1");
+        product.setProductId(UUID_1);
         productRepository.create(product);
 
-        productRepository.delete("uuid-1");
+        productRepository.delete(UUID_1);
 
-        assertNull(productRepository.findById("uuid-1"));
+        assertNull(productRepository.findById(UUID_1), "Produk yang telah dihapus tidak boleh ditemukan lagi");
     }
 
     @Test
     void testDeleteNotFound() {
-
         productRepository.delete("uuid-random");
         Iterator<Product> iterator = productRepository.findAll();
-        assertFalse(iterator.hasNext());
+        assertFalse(iterator.hasNext(), "Menghapus ID yang tidak ada tidak boleh mengubah repository kosong");
     }
 
     @Test
     void testFindByIdNotFoundWhenDataExists() {
-        // Data ada, tapi ID yang dicari tidak ada
         Product product1 = new Product();
-        product1.setProductId("uuid-1");
+        product1.setProductId(UUID_1);
         product1.setProductName("Sampo");
         productRepository.create(product1);
 
         Product found = productRepository.findById("uuid-zombie");
-        assertNull(found);
+        assertNull(found, "Mencari produk dengan ID tidak valid saat data lain ada harus mengembalikan null");
     }
 
     @Test
     void testUpdateNotFoundWhenDataExists() {
-        // Data ada, tapi ID yang mau diupdate tidak ada
         Product product1 = new Product();
-        product1.setProductId("uuid-1");
+        product1.setProductId(UUID_1);
         product1.setProductName("Sampo");
         productRepository.create(product1);
 
@@ -167,6 +177,6 @@ class ProductRepositoryTest {
         productZ.setProductName("Sabun");
 
         Product result = productRepository.update(productZ);
-        assertNull(result);
+        assertNull(result, "Memperbarui produk dengan ID tidak valid saat data lain ada harus mengembalikan null");
     }
 }

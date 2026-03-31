@@ -32,21 +32,17 @@ class HomePageFunctionalTest {
 
     @Test
     void pageTitle_isCorrect(ChromeDriver driver) throws Exception {
-        //buka halaman utama
         driver.get(baseUrl);
-        // ambiljudul dari tab browser (<title>)
         String pageTitle = driver.getTitle();
-        // Verifikasi apakah judulnya "ADV Shop"
-        assertEquals("ADV Shop", pageTitle);
+
+        assertEquals("ADV Shop", pageTitle, "Judul halaman harus 'ADV Shop'");
     }
 
     @Test
     void welcomeMessage_homePage_isCorrect(ChromeDriver driver) throws Exception {
-        // Buka halaman utama
         driver.get(baseUrl);
-        //cari elemen <h3> di halaman
         String welcomeMessage = driver.findElement(By.tagName("h3")).getText();
-        // Verifikasi apakah teksnya benar-benar "Welcome"
-        assertEquals("Welcome", welcomeMessage);
+
+        assertEquals("Welcome", welcomeMessage, "Pesan sambutan di halaman utama harus 'Welcome'");
     }
 }

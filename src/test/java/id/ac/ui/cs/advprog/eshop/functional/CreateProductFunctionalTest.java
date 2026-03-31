@@ -40,7 +40,9 @@ class CreateProductFunctionalTest {
         driver.findElement(By.tagName("button")).click();
 
         String pageSource = driver.getPageSource();
-        assertTrue(pageSource.contains("Sampo Cap Bambang"));
-        assertTrue(pageSource.contains("20"));
+        boolean isNamePresent = pageSource.contains("Sampo Cap Bambang");
+        boolean isQuantityPresent = pageSource.contains("20");
+
+        assertTrue(isNamePresent && isQuantityPresent, "Halaman harus menampilkan nama dan kuantitas produk yang baru dibuat");
     }
 }

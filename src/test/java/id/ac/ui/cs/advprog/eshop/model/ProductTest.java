@@ -19,31 +19,31 @@ class ProductTest {
 
     @Test
     void testGetProductId() {
-        assertEquals("eb558e9f-1c39-460e-8860-71af6af63bd6", this.product.getProductId());
+        assertEquals("eb558e9f-1c39-460e-8860-71af6af63bd6", this.product.getProductId(), "ID produk harus sesuai dengan yang di-set");
     }
 
     @Test
     void testGetProductName() {
-        assertEquals("Sampo Cap Bambang", this.product.getProductName());
+        assertEquals("Sampo Cap Bambang", this.product.getProductName(), "Nama produk harus sesuai dengan yang di-set");
     }
 
     @Test
     void testGetProductQuantity() {
-        assertEquals(100, this.product.getProductQuantity());
+        assertEquals(100, this.product.getProductQuantity(), "Kuantitas produk harus sesuai dengan yang di-set");
     }
 
     @Test
     void testGetProductIdNegative() {
-        assertNotEquals("wrong-id-123", this.product.getProductId());
+        assertNotEquals("wrong-id-123", this.product.getProductId(), "ID produk tidak boleh sama dengan ID yang salah");
     }
 
     @Test
     void testGetProductNameNegative() {
-        assertNotEquals("Sampo Cap Bango", this.product.getProductName());
+        assertNotEquals("Sampo Cap Bango", this.product.getProductName(), "Nama produk tidak boleh sama dengan nama yang salah");
     }
 
     @Test
     void testGetProductQuantityNegative() {
-        assertNotEquals(0, this.product.getProductQuantity());
+        assertNotEquals(0, this.product.getProductQuantity(), "Kuantitas produk tidak boleh sama dengan kuantitas yang salah");
     }
 }
